@@ -20,5 +20,16 @@
     "typescript": "^3.7.0",
     "n8n-core": "^0.23.0",
     "n8n-workflow": "0.21.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "credentials": [
+        "dist/credentials/Mqtt.credentials.js"
+    ],
+    "nodes": [
+        "dist/nodes/MqttTrigger.node.js"
+    ]
   }
 }
