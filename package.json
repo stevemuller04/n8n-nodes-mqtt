@@ -29,6 +29,7 @@
         "dist/credentials/Mqtt.credentials.js"
     ],
     "nodes": [
+        "dist/nodes/Mqtt.node.js",
         "dist/nodes/MqttTrigger.node.js"
     ]
   }
