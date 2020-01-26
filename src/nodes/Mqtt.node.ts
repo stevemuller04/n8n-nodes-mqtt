@@ -19,7 +19,7 @@ export class Mqtt implements INodeType {
 			color: '#CCCCCC',
 		},
 		inputs: ['main'],
-		outputs: [],
+		outputs: ['main'],
 		credentials: [
 			{
 				name: 'mqtt',
@@ -65,6 +65,7 @@ export class Mqtt implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const credentials = this.getCredentials('mqtt') as ICredentialDataDecryptedObject;
+		let output: INodeExecutionData[] = [];
 
 		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
 			// Get parameters
@@ -83,8 +84,16 @@ export class Mqtt implements INodeType {
 			// Publish message
 			await client.publish(configTopic, configMessage);
 			await client.end();
+
+			// Make output
+			output.push({
+				json: {
+					topic: configTopic,
+					message: configMessage,
+				}
+			});
 		}
 
-		return this.prepareOutputData(items);
+		return this.prepareOutputData(output);
 	}
 }
