@@ -5,7 +5,7 @@ import {
 	ITriggerResponse,
 	ICredentialDataDecryptedObject,
 } from 'n8n-workflow';
-import { connect, MqttClient } from 'mqtt';
+import { AsyncMqttClient } from '../util/AsyncMqttClient';
 
 export class MqttTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -62,37 +62,17 @@ export class MqttTrigger implements INodeType {
 		const credentials = this.getCredentials('mqtt') as ICredentialDataDecryptedObject;
 
 		// Set up client connection
-		const client: MqttClient = await new Promise((resolve, reject) => {
-			const client: MqttClient = connect(configUrl, {
-				clientId: configClientId,
-				username: credentials.username as string,
-				password: credentials.password as string,
-			});
-			const onConnect = () => {
-				client.removeListener("connect", onConnect);
-				client.removeListener("error", onError);
-				resolve(client);
-			};
-			const onError = (err: string) => {
-				client.removeListener("connect", onConnect);
-				client.removeListener("error", onError);
-				client.end();
-				reject(err);
-			};
-			client.on("connect", onConnect);
-			client.on("error", onError);
+		const client: AsyncMqttClient = await AsyncMqttClient.connect(configUrl, {
+			clientId: configClientId,
+			username: credentials.username as string,
+			password: credentials.password as string,
 		});
 
 		// Subscribe to topic
-		await new Promise((resolve, reject) => {
-			client.subscribe(configTopic, (err, result) => {
-				if (err) reject(err);
-				else resolve(result);
-			});
-		});
+		await client.subscribe(configTopic);
 
 		// Register trigger
-		client.on("message", (topic: string, message: Buffer, _packet) => {
+		client.onMessage((topic: string, message: Buffer, _packet) => {
 			const data = {
 				topic,
 				value: message.toString()
@@ -101,7 +81,7 @@ export class MqttTrigger implements INodeType {
 		});
 
 		const closeFunction = async () => {
-			client.end();
+			await client.end();
 		};
 
 		return {
