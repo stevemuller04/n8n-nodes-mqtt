@@ -68,9 +68,6 @@ export class MqttTrigger implements INodeType {
 			password: credentials.password as string,
 		});
 
-		// Subscribe to topic
-		await client.subscribe(configTopic);
-
 		// Register trigger
 		client.onMessage((topic: string, message: Buffer, _packet) => {
 			const data = {
@@ -80,8 +77,11 @@ export class MqttTrigger implements INodeType {
 			this.emit([this.helpers.returnJsonArray(data)]);
 		});
 
+		// Subscribe to topic
+		await client.subscribe(configTopic);
+
 		const closeFunction = async () => {
-			await client.end();
+			await client.end(true);
 		};
 
 		return {

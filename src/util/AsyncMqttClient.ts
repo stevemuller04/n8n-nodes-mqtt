@@ -46,12 +46,11 @@ export class AsyncMqttClient {
 
 	end(force?: boolean): Promise<void> {
 		return new Promise((resolve, _reject) => {
-			this.syncMqttClient.end(force, undefined, () => resolve())
+			this.syncMqttClient.end(force, () => resolve());
 		});
 	}
 	
-	onMessage(callback: OnMessageCallback): AsyncMqttClient {
+	onMessage(callback: OnMessageCallback): void {
 		this.syncMqttClient.on("message", callback);
-		return this;
 	}
 }

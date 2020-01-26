@@ -82,6 +82,7 @@ export class Mqtt implements INodeType {
 
 			// Publish message
 			await client.publish(configTopic, configMessage);
+			await client.end();
 		}
 
 		return this.prepareOutputData(items);
