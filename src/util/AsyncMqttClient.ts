@@ -39,9 +39,12 @@ export class AsyncMqttClient {
 	}
 
 	publish (topic: string, message: string | Buffer): Promise<void> {
-		return new Promise((resolve, _reject) => {
-			this.syncMqttClient.publish(topic, message, () => resolve());
+		return new Promise((resolve, reject) => {
+			this.syncMqttClient.publish(topic, message, (err, _result) => {
+				if (err) reject(err);
+				else resolve();
 			});
+		});
 	}
 
 	end(force?: boolean): Promise<void> {
