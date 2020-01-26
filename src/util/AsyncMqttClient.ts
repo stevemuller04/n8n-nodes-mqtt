@@ -41,12 +41,24 @@ export class AsyncMqttClient {
 	publish (topic: string, message: string | Buffer): Promise<void> {
 		return new Promise((resolve, _reject) => {
 			this.syncMqttClient.publish(topic, message, () => resolve());
-		});
+			});
 	}
 
 	end(force?: boolean): Promise<void> {
 		return new Promise((resolve, _reject) => {
-			this.syncMqttClient.end(force, () => resolve());
+			/* The whole code that follows could be replaced by
+			 *   this.syncMqttClient.end(force, () => resolve());
+			 * but a bug prevents the callback from firing.
+			 */
+			const onEnd = () => {
+				this.syncMqttClient.removeListener("end", onEnd);
+				resolve();
+			};
+			this.syncMqttClient.on("end", onEnd);
+			if (this.syncMqttClient.disconnected)
+				onEnd();
+			else
+				this.syncMqttClient.end(force);
 		});
 	}
 	
